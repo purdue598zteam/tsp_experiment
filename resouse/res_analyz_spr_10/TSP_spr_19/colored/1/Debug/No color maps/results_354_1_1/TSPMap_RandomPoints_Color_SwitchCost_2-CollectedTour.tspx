@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TspDocument>
+	<MapSize width="900" height="900" />
+	<Cities />
+	<Tours>
+		<Tour Name="User Tour" IsOptimal="False">
+			<City x="430" y="858" group="0" />
+			<City x="531" y="894" group="0" />
+			<City x="648" y="813" group="0" />
+			<City x="752" y="882" group="0" />
+			<City x="806" y="837" group="0" />
+			<City x="883" y="759" group="1" />
+			<City x="708" y="710" group="1" />
+			<City x="767" y="607" group="0" />
+			<City x="698" y="591" group="1" />
+			<City x="641" y="623" group="0" />
+			<City x="661" y="554" group="1" />
+			<City x="882" y="382" group="0" />
+			<City x="840" y="347" group="1" />
+			<City x="779" y="372" group="1" />
+			<City x="773" y="308" group="1" />
+			<City x="821" y="254" group="0" />
+			<City x="887" y="179" group="1" />
+			<City x="767" y="218" group="1" />
+			<City x="689" y="328" group="0" />
+			<City x="718" y="180" group="0" />
+			<City x="671" y="8" group="1" />
+			<City x="565" y="89" group="1" />
+			<City x="574" y="188" group="1" />
+			<City x="494" y="149" group="0" />
+			<City x="497" y="231" group="1" />
+			<City x="347" y="48" group="1" />
+			<City x="385" y="240" group="0" />
+			<City x="259" y="191" group="0" />
+			<City x="134" y="171" group="0" />
+			<City x="63" y="167" group="1" />
+			<City x="15" y="79" group="0" />
+			<City x="96" y="239" group="0" />
+			<City x="29" y="392" group="0" />
+			<City x="108" y="298" group="1" />
+			<City x="7" y="487" group="1" />
+			<City x="41" y="816" group="1" />
+			<City x="110" y="664" group="0" />
+			<City x="118" y="550" group="0" />
+			<City x="67" y="506" group="0" />
+			<City x="364" y="629" group="0" />
+			<City x="299" y="725" group="0" />
+			<City x="259" y="805" group="1" />
+			<City x="353" y="777" group="1" />
+			<City x="460" y="788" group="1" />
+			<City x="394" y="477" group="1" />
+			<City x="439" y="446" group="1" />
+			<City x="574" y="483" group="1" />
+			<City x="491" y="520" group="1" />
+			<City x="526" y="449" group="0" />
+			<City x="498" y="735" group="0" />
+		</Tour>
+	</Tours>
+</TspDocument>

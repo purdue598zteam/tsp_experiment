@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<Test xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_20.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_9.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_3.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_14.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_1.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_4.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_21.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_10.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_29.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_27.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_16.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_8.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_22.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_7.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_15.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_5.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_12.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_11.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_2.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_24.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_25.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_13.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_28.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_6.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_18.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_26.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_23.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_19.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_17.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_NoColor_0.MapXml"/>
+
+</Test> 

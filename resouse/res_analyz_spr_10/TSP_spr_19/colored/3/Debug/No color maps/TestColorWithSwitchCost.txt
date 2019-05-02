@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<Test xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_28.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_11.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_13.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_26.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_20.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_25.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_2.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_18.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_14.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_1.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_0.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_17.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_8.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_7.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_6.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_3.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_9.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_21.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_29.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_24.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_12.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_10.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_27.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_22.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_23.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_16.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_5.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_19.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_4.MapXml"/>
+
+    <SolveTspProblemTask problemFile="TSPMap_RandomPoints_Color_SwitchCost_15.MapXml"/>
+
+</Test> 
