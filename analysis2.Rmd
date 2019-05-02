@@ -135,6 +135,11 @@ write.csv (res_err_time_ordered, file.path(path_data, "output/TSP_color_2019_res
 ```{r}
 library(XML)
 
+get_subject_order_map <- function() {
+  subject_order_map <- read.table("order_arrange")
+  subject_order_map + 1
+}
+
 get_map_score <- function() {
   path_data <- "resource/res_analyz_spr_10/"
   best_value <- as.numeric(readLines(file.path(path_data,"ColorOptimalLength.txt"), 30))
@@ -151,6 +156,7 @@ get_subject_dir_map <- function() {
 }
 map_score <- get_map_score()
 subject_dir_map <- get_subject_dir_map()
+subject_order_map <- get_subject_order_map()
 
 get_distance_from_two_record <- function(point1, point2) {
   distance <- sqrt((point1-point2)[1]^2 + (point1-point2)[2]^2)
@@ -161,17 +167,10 @@ get_distance_from_two_record <- function(point1, point2) {
 }
 
 get_real_record <- function(map_id, subject_id, subject_dir_map) {
-  
   file <- paste(subject_dir_map[subject_id],"/TSPMap_RandomPoints_Color_SwitchCost_", toString(map_id-1),"-CollectedTour.tspx",sep = "")
-  file
-  
+
   file_content = readChar(file, file.info(file)$size)
-    
-
-  file.info(file)
-  details = details[with(details, order(as.POSIXct(mtime))), ]
-  details
-
+  
   tmp_data <- NULL
   first_data <- NULL
   distance_all <- 0
@@ -199,16 +198,21 @@ get_real_record <- function(map_id, subject_id, subject_dir_map) {
 }
 
 experiment_table <- data.frame()
-for(subject_id in 1:27) {
+for(subject_id in 1:30) {
   for(map_id in 1:30) {
     real_score <- get_real_record(map_id, subject_id, subject_dir_map)
     best_score <- map_score[map_id]
     err_ratio <- (real_score-best_score)/best_score
-    record <- data.frame(map_id, subject_id, real_score, best_score, err_ratio)
+    order_1_to_30 <- subject_order_map[subject_id, map_id]
+    block_1_to_5 <- floor((order_in_30 - 1) / 6) + 1
+    record <- data.frame(map_id, subject_id, real_score, best_score, err_ratio, order_1_to_30, block_1_to_5)
     experiment_table <- rbind(experiment_table, record)
   }
 }
+
 experiment_table
+nt <- experiment_table %>% arrange(subject_id, map_id)
+nt
 ```
 
 
