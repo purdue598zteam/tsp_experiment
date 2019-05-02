@@ -1,0 +1,634 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+setwd('~/Download/pr0')
+```
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+#subj_count = 3
+subj_num = 0
+
+
+
+
+
+
+
+
+path_data <- "C:/Users/zsajedin/Desktop/res_analyz_spr_10/"
+
+opt <- as.numeric( readLines(file.path(path_data,"ColorOptimalLength.txt"),30))
+
+dirsAll <- list.dirs(path =file.path(path_data, "TSP_spr_19/colored") , full.names = TRUE, recursive = TRUE) #all subfolders
+
+dirsAll <- grep("results", dirsAll, value = TRUE) #all subfolders that the result folder is there
+#dirsAll
+
+
+
+
+subj_count <- length(dirsAll) #
+res_tbl <- matrix(0, nrow = 30, ncol = subj_count)
+res_tble_err <- matrix(0, nrow = 30, ncol = subj_count)
+res_err_time_ordered <- matrix(0, nrow = 30, ncol = subj_count)
+res_tbl_time_ordered <- matrix(0, nrow = 30, ncol = subj_count)
+#all result files for each subject one by one
+for(folder in dirsAll[1:length(dirsAll)]){
+  
+    #-------------------
+    #order of files by their creation time
+    details = file.info(list.files(folder, pattern="*.tspx", full.names=TRUE))
+    details = details[with(details, order(as.POSIXct(mtime))), ]
+    files_time_ordered = rownames(details)
+    #print(details)
+    #finding the number of the file
+       match <- gregexpr("_|-", files_time_ordered)
+    
+    match <- as.numeric(unlist(regmatches(files_time_ordered, gregexpr("[[:digit:]]+", files_time_ordered))))
+    #FN <- as.numeric(unlist(match))
+    file_time_number<-match[c(rep(FALSE,(length(match)/30)-1),TRUE)]
+    print(file_time_number)
+    #--------------------
+  
+  
+    subj_num = subj_num + 1
+    counter =0
+    #filenames <- list.files(paste(folder+, pattern="*.tspx", full.names=TRUE)
+    while (counter< 30 ){
+        file <- paste(folder,"/TSPMap_RandomPoints_Color_SwitchCost_",toString(counter),"-CollectedTour.tspx",sep = "")
+        file
+        counter=counter+1
+        fMap <- readLines(file,58)
+        #---------------
+        tourL = 0
+        #-----
+        #extracting points and color from each tour file
+        matches <- regmatches(fMap, gregexpr("[[:digit:]]+", fMap))
+        fN <- as.numeric(unlist(matches))
+        fNum<-fN[6:length(fN)]
+        coord <- matrix(fNum,byrow = TRUE ,50,3)
+        #calculating distance
+        dis_mat <- as.matrix( dist(coord, method = "euclidean"))
+        #---------------
+        #tourL <- sum(diag(dis_mat[2:49,1:49]))#single color calculation 
+        #tourL
+        #---------------
+        #for colored
+        
+        #---
+        #goal: finding non_euclidean point changes and doubling those distances
+        shifted_coord <- coord[,3]
+        shifted_coord[2:50] <- coord[1:49,3]
+        nonEuc_edge <- which(coord[,3] != shifted_coord)#finding the indices of change of color # the 1st and last one and the second are exceptions
+        
+        #---
+        #applying non euc distances to the distance matrix
+        dis_nonEuc <- dis_mat
+        dis_nonEuc[nonEuc_edge,nonEuc_edge-1] <- 2*dis_nonEuc[nonEuc_edge,nonEuc_edge-1] #applying non_euc distances
+        
+        #---
+        #distance between last point to first point
+        last_to_first<- (2 - as.numeric( coord[50,3] == coord[1,3]))* dist(matrix (c (coord[50,1], coord[50,2], coord[1,1], coord[1,2]), nrow = 2, ncol = 2, byrow = TRUE))#the first paranthesis is for checking if the last edge is euclidean or not
+        
+        #---
+        #tour calculation
+        tourL <- sum(diag(dis_nonEuc[2:50,1:49])) + last_to_first
+        #print(tourL)
+        #print(file)
+        #write(tourL, file = "C:/Users/zsajedin/Desktop/data.txt",
+        #  ncolumns = 1,
+        #  append = TRUE, sep = "\n")
+        res_tbl [counter, subj_num] <- tourL # calculating tour for map number i
+        res_tble_err[counter, subj_num] <- (tourL-opt[counter])/opt[counter]# error of map number i
+        res_err_time_ordered[which(file_time_number[1:30]==counter-1), subj_num] <-  res_tble_err[counter, subj_num]# error of map number i but puting that in the order that it appeard.
+        res_tbl_time_ordered[which(file_time_number[1:30]==counter-1), subj_num] <-  res_tbl[counter, subj_num]# total length of map number i but puting that in the order that it appeard.
+    #
+    }
+}
+
+res_tble_analyzed <- as.data.frame( res_tbl_time_ordered)
+
+
+res_tble_analyzed [nrow(res_tbl)+1,] <- colMeans (res_tbl_time_ordered)
+dim(res_tble_analyzed)
+res_tble_analyzed [1:nrow(res_tbl_time_ordered),ncol(res_tbl_time_ordered)+1] <- rowMeans(res_tbl_time_ordered)#adding mean of each map and each subject
+dim(res_tble_analyzed)
+
+
+blocked_res <- matrix(res_tbl_time_ordered,nrow = 6, byrow = TRUE)
+#blocked_res
+#res_tble_analyzed
+#res_tble_analyzed [,ncol(res_tble_analyzed)+1] <- mean(res_tble_analyzed)
+#mean(res_tble_analyzed)
+
+write.csv (res_tble_analyzed, file.path(path_data, "output/subjTours.csv"))
+write.csv (res_err_time_ordered, file.path(path_data, "output/TSP_color_2019_res.csv"))
+
+#
+ 
+ 
+```
+
+```{r}
+library(ggplot2)
+
+
+
+#df2 <- data_summary(res_err_time_ordered[,4])
+
+
+
+#Analyzing data
+#mean_col <- ncol(res_err_time_ordered)
+
+mean_of_5 <- data.frame(1:6,0)
+std <- data.frame(1:6,0)
+for (nn in 1:6){
+mean_of_5 [nn] <- mean(res_err_time_ordered[((nn*5)-5+1):(nn*5),])
+std[nn] <- sd (res_err_time_ordered[((nn*5)-5+1):(nn*5),])/sqrt(length(res_err_time_ordered[((nn*5)-5+1):(nn*5),]))
+}
+
+
+
+ggplot( 
+  data = mean_of_5,mapping = aes( x= 1:6 ,y = mean_of_5[,2])) + 
+   geom_path(size=1) + geom_errorbar(aes(ymin=(mean_of_5[,2]-std[,2]), ymax=(mean_of_5[,2]+std[,2])), width=.2,
+                 position=position_dodge(0.05)) +coord_cartesian(xlim=c(1, 6),ylim=c(.15, .25)) +ylab("Error") +xlab("Blocks") 
+
+blc <- c("bl1","bl2","bl3","bl4","bl5","bl6")
+
+fit <- aov(mean_of_5[,2] ~ blc, data=mean_of_5)
+
+
+#sign test
+binom.test(18, 32, p = 0.5, alternative = "two.sided", conf.level = 0.95)
+
+
+
+```
+
+```{r}
+
+#plotting first 5-6 trials only
+library(ggplot2)
+
+
+#df2 <- data_summary(res_err_time_ordered[,4])
+
+
+
+#Analyzing data
+#mean_col <- ncol(res_err_time_ordered)
+
+mean_of_5 <- data.frame(1:6,0)
+std <- data.frame(1:6,0)
+
+mean_of_5 [1:6] <- mean(res_err_time_ordered[1:(nn*5),])
+std[1:6] <- sd (res_err_time_ordered[1:(nn*5),])/sqrt(length(res_err_time_ordered[1:(nn*5),]))
+
+
+
+mean_of_5 <- data.frame(1:6,mean_of_5)
+res_err_time_ordered[1:(nn*5),]
+
+ggplot( 
+  data = mean_of_5,mapping = aes( x= 1:6 ,y = mean_of_5[,2])) + 
+   geom_path(size=1) + geom_errorbar(aes(ymin=(mean_of_5[,2]-std[,2]), ymax=(mean_of_5[,2]+std[,2])), width=.2,
+                 position=position_dodge(0.05)) +coord_cartesian(xlim=c(1, 6),ylim=c(.1, .3)) +ylab("Error") +xlab("Blocks") 
+
+blc <- c("bl1","bl2","bl3","bl4","bl5","bl6")
+
+fit <- aov(mean_of_5[,2] ~ blc, data=mean_of_5)
+
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+#finding what the random number was for each tour from the availabe points
+
+
+
+
+#First finding the original order of maps
+subj_num = 0
+
+
+#filenames <- list.files("C:/Users/zsajedin/Desktop/results", pattern="*.tspx", full.names=TRUE)
+#tsp_result_colored_feb_25_2019
+dirsAll <- list.dirs(path ="C:/Users/zsajedin/Desktop/test" ,full.names = TRUE, recursive = TRUE) #all subfolders
+
+dirsAll <- grep("results", dirsAll, value = TRUE) #all subfolders
+dirsAll
+
+res_tbl_Original <- matrix(0, nrow = 30, ncol = 50) # saving  the orderd map
+
+
+
+#reading each map file
+for(folder in dirsAll[1:length(dirsAll)]){
+    subj_num = subj_num + 1
+    counter =0
+    #filenames <- list.files(paste(folder+, pattern="*.tspx", full.names=TRUE)
+    while (counter< 30 ){
+        file <- paste(folder,"/TSPMap_RandomPoints_Color_SwitchCost_",toString(counter),".MapXml",sep = "")
+        file
+        counter=counter+1
+        fMap <- readLines(file,58)
+        #---------------
+        tourL = 0
+        #-----
+        #extracting points and color from each tour file
+        matches <- regmatches(fMap, gregexpr("[[:digit:]]+", fMap))
+        fN <- as.numeric(unlist(matches))
+        fNum<-fN[5:length(fN)]#5 because we do not need the first 5 numbers in xmlmap file
+        coord <- matrix(fNum,byrow = TRUE ,50,3)
+
+
+        #comparing them with 30maps
+        coord_ordered = coord[order(coord[,1])]
+        
+         res_tbl_Original[counter,1:50] <- coord_ordered[1:50]
+       
+
+  #saving the matched map
+
+
+}
+}
+
+
+#-------------------------------------------
+#Second finding the random order of maps for each subject
+
+
+
+#First finding the original order of maps
+subj_num = 0
+
+
+#filenames <- list.files("C:/Users/zsajedin/Desktop/results", pattern="*.tspx", full.names=TRUE)
+#tsp_result_colored_feb_25_2019
+dirsAll <- list.dirs(path ="C:/Users/zsajedin/Desktop/test" ,full.names = TRUE, recursive = TRUE) #all subfolders
+subj_count <- length(dirsAll)-1 #-1 bcz root is
+
+dirsAll <- grep(pattern = "results", dirsAll, value = TRUE) #all subfolders
+dirsAll
+
+res_tbl <- matrix(0, nrow = 30, ncol = 50) # saving  the orderd map
+
+
+
+#reading each map file
+for(folder in dirsAll[1:length(dirsAll)]){
+    subj_num = subj_num + 1
+    counter =0
+    #filenames <- list.files(paste(folder+, pattern="*.tspx", full.names=TRUE)
+    while (counter< 30 ){
+        file <- paste(folder,"/TSPMap_RandomPoints_Color_SwitchCost_",toString(counter),".mapxml",sep = "")
+        file
+        counter=counter+1
+        fMap <- readLines(file,58)
+        #---------------
+        tourL = 0
+        #-----
+        #extracting points and color from each tour file
+        matches <- regmatches(fMap, gregexpr("[[:digit:]]+", fMap))
+        fN <- as.numeric(unlist(matches))
+        fNum<-fN[6:length(fN)]
+        coord <- matrix(fNum,byrow = TRUE ,50,3)
+
+
+        #comparing them with 30maps
+        coord_ordered <- coord[order(coord[1:50,3])]
+        
+       res_tbl[counter,1:50] <- coord_ordered[1:50]
+       map_order <- 30:59
+       
+       for (mm in 1:30){
+         map_order[mm] <- which(apply(res_tbl_Original, 1, function(x) all(x == res_tbl[mm,1:50])))
+
+         #map_order[mm] <- which(res_tbl_Original==res_tbl_Original[mm,1:50])
+         #map_order[mm] <- which(apply(res_tbl_Original[1:30,1:50], 1, function(x) all.equal(x[1:50], res_tbl[mm,1:50])) == "TRUE")
+       }
+       write(map_order, file = paste(folder,"/rnd.txt"),sep = "")
+       
+       
+  #saving the matched map
+
+
+}
+}
+
+```
+
+```{r}
+subj_num = 0
+
+
+#filenames <- list.files("C:/Users/zsajedin/Desktop/results", pattern="*.tspx", full.names=TRUE)
+#tsp_result_colored_feb_25_2019
+dirsAll <- list.dirs(path ="C:/Users/zsajedin/Desktop/test0" ,full.names = TRUE, recursive = TRUE) #all subfolders
+
+dirsAll <- grep("results", dirsAll, value = TRUE) #all subfolders
+dirsAll
+
+res_tbl <- matrix(0, nrow = 30, ncol = 50) # saving  the orderd map
+
+
+
+#reading each map file
+
+
+
+
+for(folder in dirsAll[1:length(dirsAll)]){
+    subj_num = subj_num + 1
+    counter =0
+    #filenames <- list.files(paste(folder+, pattern="*.tspx", full.names=TRUE)
+    #-------------------
+    #ordering files by their creation time
+    details = file.info(list.files(folder, pattern="*.tspx", full.names=TRUE))
+    details = details[with(details, order(as.POSIXct(mtime))), ]
+    files_time_ordered = rownames(details)
+    
+    
+    #--------------------
+    
+    
+    
+    
+    
+    while (counter< 30 ){
+        file <- paste(folder,"/TSPMap_RandomPoints_Color_SwitchCost_",toString(counter),"-CollectedTour.tspx",sep = "")
+        
+        counter=counter+1
+        fMap <- readLines(file,58)
+        #---------------
+        tourL = 0
+        #-----
+        #extracting points and color from each tour file
+        matches <- regmatches(fMap, gregexpr("[[:digit:]]+", fMap))
+        fN <- as.numeric(unlist(matches))
+        fNum<-fN[6:length(fN)]
+        coord <- matrix(fNum,byrow = TRUE ,50,3)
+
+
+        #comparing them with 30maps
+        coord_ordered = coord[order(coord[,1])]
+        
+         res_tbl[counter,1:50] <- coord_ordered[1:50]
+
+
+  #saving the matched map
+
+
+    }
+        map_order <- 30:59
+       
+        for (mm in 1:30){
+         map_order[mm] <- which(apply(res_tbl_Original, 1, function(x) all(x == res_tbl[mm,1:50])))
+
+         #map_order[mm] <- which(res_tbl_Original==res_tbl_Original[mm,1:50])
+         #map_order[mm] <- which(apply(res_tbl_Original[1:30,1:50], 1, function(x) all.equal(x[1:50], res_tbl[mm,1:50])) == "TRUE")
+        }
+        write(map_order, file = paste(folder,"/rnd.txt",sep = ""))
+        ?file     
+        
+        mode(map_order)
+    
+}
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+#practing exam
+years <- 1991 : 2000  # Watch out for: years <- 2000:1991
+years
+years[] <- 0  # Maintains old vector
+years
+people <- c("Alice", "Bob", 'Carol') # single/double quotes
+
+class(mean(3))
+typeof(mean(3))
+mode(mean(3))
+
+years[length(years) + 1] <- 2015
+x
+
+vals <- 1 : 3
+typeof(vals)
+
+vals[6] <- 6L
+
+print(vals)
+length(vals)
+?seq
+
+((-2:2) >= 0) && ((-2:10) <= 0)
+
+
+
+
+house <- "Apartment"; 
+cat   <- list("Calico", "Flopsy", 3L); 
+sofa  <- "Red" 
+possessions <- list( house, cat, sofa, "3000USD")
+
+typeof(possessions[[1]])
+
+class(unlist(possessions))
+str(possessions)
+
+?setNames
+
+
+
+
+
+car <- list("Manufacturer" = "Ford", "Make" = "Mustang", 
+             "Year" = 1999, "Gasoline" = TRUE )
+
+car[c("Manufacturer", "Make")]  # A two-element sublist
+car[["Year"]]   # A length-one vector
+car$Year   # Shorthand notation
+
+attributes(car)
+
+
+
+
+
+
+my_arr <- array(1 : 8, c(2,2,2)); print(my_arr)
+
+
+my_mat <- array(1 : 6, c(2,3,1)) # dim(my_mat) is (2,3,1) 
+print(my_mat)
+
+my_mat <- drop(my_mat) # dim is now (2,3) 
+print(my_mat)
+
+
+
+df <- data.frame(age = c(25L,24L,21L),  # Warning: df is an
+                 PhD = c( T , T , F ),  #   R function
+                 GPA = c(3.6,2.4,2.8))
+
+print(df)
+typeof(df)
+class(df)
+
+
+library(tidyverse)
+t_mtcars <- as_tibble(mtcars)
+class(t_mtcars)
+
+sin_tb <- tibble(x=seq(-5,5,.1), y=sin(x));
+print(sin_tb)
+
+
+grades <- factor(c("a", "a", "b", "f"))
+typeof(grades)
+levels(grades)
+class(grades)
+
+grades <- factor(c("a","a","b","f"),
+            levels = c("f","c","b","a"),
+            ordered = TRUE )
+grades
+
+
+# First control, then treatment:
+gl(2, 8, labels = c("Control", "Treat"))
+
+gl(2, 1, 20) # 20 alternating 1s and 2s
+?gl
+
+c(TRUE, TRUE) & c(TRUE, FALSE) & {print("Hello!"); FALSE}
+
+
+
+gauss_pdf <- function(ip, mn, vr, lg_pr) {
+# Calculate the (log)-probability of Gaussian with mean m and variance vr
+  rslt <- -((ip-mn)^2)/(2*vr)
+  rslt <- rslt - 0.5*log(2*pi*vr)
+# Do we want the prob or the log-prob?
+  if(lg_pr == F) rslt <- exp(rslt)
+  return(rslt)  
+}
+str(gauss_pdf)
+
+x <- 5; env <- environment(); env
+env$x 
+
+
+
+
+
+
+
+
+
+func1 <- function() {my_local <- 1; environment()}
+local_env <- func1()
+local_env$my_local
+parent.env(local_env) # Each environment has a parent environment
+
+
+
+
+x <- 5 
+func1 <- function(x) {x + 1}
+func1(1)
+x <- 5; func2 <- function() {x + 1}
+func2(); x
+x <- 10; func2() # use new x or x at the time of definition?
+x <- 1; y <- 10
+func3 <- function() {x <- x + 1; y <<- y + 1; environment()}
+env <- func3()
+c(x, y, env$x, env$y)
+func1 <- function(x) {x + 1}
+func4 <- function(x) {func1(x)}
+func4(2)
+x <- 5; func2 <- function() {x + 1}
+func5 <- function(x) {x <- 10; func2()}
+func5(2) # func2 uses x from calling or global environment?
+
+func <- function(x,y) if(x) 2*x else x + 2*y
+func(1, {print("Hello"); 5})
+func(0, {print("Hello"); 5})
+
+
+
+mix2norm <- data.frame(dosage = c(rnorm(1000),rnorm(1000,3)),
+                     grp = rep(c("a","b"),each=1000))
+
+ggplot(mix2norm, aes(x=dosage, color = grp)) +
+    geom_density(adjust=1)
+
+
+ggplot(mix2norm, aes(x=dosage, color = grp)) + stat_density(adjust=.01)
+
+ggplot(mix2norm, aes(x=dosage, color = grp)) +
+  stat_density(adjust=1/2, size=2, position = "jitter",
+  geom = "line")
+
+
+
+edu_pred <- 10:25
+sen_pred <- seq(0,200,10)
+pred <- data.frame(Education=rep(edu_pred, length(sen_pred)),
+               Seniority=rep(sen_pred, each=length(edu_pred) ))
+p_val <- predict.lm(fit, pred)
+pred$p_val = p_val
+
+
+?gather
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
