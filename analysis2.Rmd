@@ -9,15 +9,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r}
+```{r,get_dataset}
 #subj_count = 3
 subj_num = 0
 
-path_data <- "C:/Users/zsajedin/Desktop/res_analyz_spr_10/"
+dataset <- data.frame()
 
-opt <- as.numeric( readLines(file.path(path_data,"ColorOptimalLength.txt"),30))
+path_data <- "resource/res_analyz_spr_10/"
+
+best_value <- as.numeric(readLines(file.path(path_data,"ColorOptimalLength.txt"), 30))
 
 dirsAll <- list.dirs(path =file.path(path_data, "TSP_spr_19/colored") , full.names = TRUE, recursive = TRUE) #all subfolders
+
 
 dirsAll <- grep("results", dirsAll, value = TRUE) #all subfolders that the result folder is there
 #dirsAll
@@ -33,16 +36,16 @@ res_tbl_time_ordered <- matrix(0, nrow = 30, ncol = subj_count)
 file_time_number_all_subj <- matrix(0,subj_count,30)
 #all result files for each subject one by one
 counter_order <- 0
-for(folder in dirsAll[1:length(dirsAll)]){
+for(folder in dirsAll[1:length(dirsAll)]) {
   
     #-------------------
     #order of files by their creation time
     details = file.info(list.files(folder, pattern="*.tspx", full.names=TRUE))
     details = details[with(details, order(as.POSIXct(mtime))), ]
     files_time_ordered = rownames(details)
-    #print(details)
-    #finding the number of the file
-       match <- gregexpr("_|-", files_time_ordered)
+    # print(details)
+    # finding the number of the file
+    match <- gregexpr("_|-", files_time_ordered)
     
     match <- as.numeric(unlist(regmatches(files_time_ordered, gregexpr("[[:digit:]]+", files_time_ordered))))
     #FN <- as.numeric(unlist(match))
@@ -56,7 +59,7 @@ for(folder in dirsAll[1:length(dirsAll)]){
     subj_num = subj_num + 1
     counter =0
     #filenames <- list.files(paste(folder+, pattern="*.tspx", full.names=TRUE)
-    while (counter< 30 ){
+    while (counter < 30){
         file <- paste(folder,"/TSPMap_RandomPoints_Color_SwitchCost_",toString(counter),"-CollectedTour.tspx",sep = "")
         file
         counter=counter+1
@@ -68,9 +71,9 @@ for(folder in dirsAll[1:length(dirsAll)]){
         matches <- regmatches(fMap, gregexpr("[[:digit:]]+", fMap))
         fN <- as.numeric(unlist(matches))
         fNum<-fN[6:length(fN)]
-        coord <- matrix(fNum,byrow = TRUE ,50,3)
+        coord <- matrix(fNum,byrow = TRUE, 50, 3)
         #calculating distance
-        dis_mat <- as.matrix( dist(coord, method = "euclidean"))
+        dis_mat <- as.matrix(dist(coord, method = "euclidean"))
         #---------------
         #tourL <- sum(diag(dis_mat[2:49,1:49]))#single color calculation 
         #tourL
@@ -101,7 +104,7 @@ for(folder in dirsAll[1:length(dirsAll)]){
         #  ncolumns = 1,
         #  append = TRUE, sep = "\n")
         res_tbl [counter, subj_num] <- tourL # calculating tour for map number i
-        res_tble_err[counter, subj_num] <- (tourL-opt[counter])/opt[counter]# error of map number i
+        res_tble_err[counter, subj_num] <- (tourL-best_value[counter])/best_value[counter]# error of map number i
         res_err_time_ordered[which(file_time_number[1:30]==counter-1), subj_num] <-  res_tble_err[counter, subj_num]# error of map number i but puting that in the order that it appeard.
         res_tbl_time_ordered[which(file_time_number[1:30]==counter-1), subj_num] <-  res_tbl[counter, subj_num]# total length of map number i but puting that in the order that it appeard.
     #
@@ -127,8 +130,85 @@ write.csv (res_tble_analyzed, file.path(path_data, "output/subjTours.csv"))
 write.csv (res_err_time_ordered, file.path(path_data, "output/TSP_color_2019_res.csv"))
 
 #
- 
- 
+```
+
+```{r}
+library(XML)
+
+get_map_score <- function() {
+  path_data <- "resource/res_analyz_spr_10/"
+  best_value <- as.numeric(readLines(file.path(path_data,"ColorOptimalLength.txt"), 30))
+  best_value
+}
+
+# 32 subjects
+get_subject_dir_map <- function() {
+  path_data <- "resource/res_analyz_spr_10/TSP_spr_19/colored"
+  dirsAll <- list.dirs(path =file.path(path_data) , full.names = TRUE, recursive = TRUE) 
+  dirsAll <- grep("results", dirsAll, value = TRUE)
+  subj_count <- length(dirsAll) #
+  dirsAll
+}
+map_score <- get_map_score()
+subject_dir_map <- get_subject_dir_map()
+
+get_distance_from_two_record <- function(point1, point2) {
+  distance <- sqrt((point1-point2)[1]^2 + (point1-point2)[2]^2)
+  if(point1[3] != point2[3]) {
+      distance <- 2 * distance
+  }
+  distance
+}
+
+get_real_record <- function(map_id, subject_id, subject_dir_map) {
+  
+  file <- paste(subject_dir_map[subject_id],"/TSPMap_RandomPoints_Color_SwitchCost_", toString(map_id-1),"-CollectedTour.tspx",sep = "")
+  file
+  
+  file_content = readChar(file, file.info(file)$size)
+    
+
+  file.info(file)
+  details = details[with(details, order(as.POSIXct(mtime))), ]
+  details
+
+  tmp_data <- NULL
+  first_data <- NULL
+  distance_all <- 0
+  count <- 0
+  for(city in xmlChildren(xmlChildren(xmlChildren(xmlRoot(xmlParse(file_content)))$Tours)$Tour)) {
+    count <- count + 1
+
+    city_attr <- xmlAttrs(city)
+    data<-c(as.numeric(city_attr['x']), as.numeric(city_attr['y']), as.numeric(city_attr['group']))
+    
+    if(is.null(first_data)) {
+      first_data <- data
+    }
+
+    if (count != 1) {
+      distance_all <- distance_all + get_distance_from_two_record(tmp_data, data)
+      if (count == 50) {
+        distance_all <- distance_all + get_distance_from_two_record(first_data, data)
+      } # if
+    }# if
+    tmp_data <- data
+  } # for all cities
+
+  distance_all
+}
+
+experiment_table <- data.frame()
+for(subject_id in 1:27) {
+  for(map_id in 1:30) {
+    real_score <- get_real_record(map_id, subject_id, subject_dir_map)
+    best_score <- map_score[map_id]
+    err_ratio <- (real_score-best_score)/best_score
+    record <- data.frame(map_id, subject_id, real_score, best_score, err_ratio)
+    experiment_table <- rbind(experiment_table, record)
+  }
+}
+experiment_table
 ```
 
 
@@ -175,6 +255,7 @@ binom.test(18, 32, p = 0.5, alternative = "two.sided", conf.level = 0.95)
 
 #plotting first 5-6 trials only
 library(ggplot2)
+library(tidyr)
 
 
 #df2 <- data_summary(res_err_time_ordered[,4])
@@ -212,18 +293,21 @@ fit <- aov(mean_of_5[,2] ~ blc, data=mean_of_5)
 mat <- matrix(c(2, 4, 3, 1, 5, 7), nrow=3, ncol=2)
 colnames(mat) <- c("col1","col2")
 rownames(mat) <- c("row1","row2","row3")
+library(reshape)
+library(ggvis)
 melt(mat)
 
 
-res_df <- data.frame("bl" = rep(1:6,times=32), "subj" = c() )
+res_df <- data.frame("bl" = rep(1:6,times=32), "subj" = c( rep(1:6,times=32)) )
 ?rep
 (res_err_time_ordered)
 res_df_gather <- gather(res_df, )
 col(res_err_time_ordered)
 
 
-plt<- ggvis(res_err_time_ordered,x=~row(res_err_time_ordered),y=1) %>% 
-  layer_lines(); plt
+plt<- ggvis(res_err_time_ordered,x=~row(res_err_time_ordered),y=1) %>%  layer_lines()
+
+plt
 
 
 
@@ -268,20 +352,12 @@ plt<- res_gather[61:120,]%>% ggvis(~bl,~err,stroke = ~subj) %>% group_by(subj) %
 
 plt
 
-
 res_gather$ID <- c(1:(32*6))
 
 plt<- res_gather%>% ggvis(~ID,~err,stroke = ~subj) %>% group_by(subj) %>% 
         layer_lines(strokeWidth := 2)  %>% add_axis("x", ticks = (32*6))
 
 plt
-
-
-
-
-
-
-
 ```
 
 ```{r}
@@ -600,6 +676,10 @@ class(unlist(possessions))
 str(possessions)
 
 ?setNames
+
+
+
+
 
 car <- list("Manufacturer" = "Ford", "Make" = "Mustang", 
              "Year" = 1999, "Gasoline" = TRUE )
