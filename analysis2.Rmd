@@ -1,22 +1,17 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  pdf_document: default
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
 ```{r}
 #subj_count = 3
 subj_num = 0
-
-
-
-
-
-
-
 
 path_data <- "C:/Users/zsajedin/Desktop/res_analyz_spr_10/"
 
@@ -220,7 +215,7 @@ rownames(mat) <- c("row1","row2","row3")
 melt(mat)
 
 
-res_df <- data.frame("bl" = rep(1:6,times=32), "subj" = () )
+res_df <- data.frame("bl" = rep(1:6,times=32), "subj" = c() )
 ?rep
 (res_err_time_ordered)
 res_df_gather <- gather(res_df, )
@@ -605,10 +600,6 @@ class(unlist(possessions))
 str(possessions)
 
 ?setNames
-
-
-
-
 
 car <- list("Manufacturer" = "Ford", "Make" = "Mustang", 
              "Year" = 1999, "Gasoline" = TRUE )
