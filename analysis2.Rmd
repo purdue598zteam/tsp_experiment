@@ -6,12 +6,15 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(FNN)
+library(XML)
+library(tidyverse)
+library(ggfortify)
+library(ggplot2)
 ```
 
 ```{r, 1_clean_all_data}
 rm(list = ls())
-library(XML)
-library(tidyverse)
 
 get_subject_order_map <- function() {
   subject_order_map <- read.table("order_arrange")
@@ -19,14 +22,23 @@ get_subject_order_map <- function() {
 }
 
 get_map_score <- function() {
-  path_data <- "E:\\baiduyun\\github\\tsp_experiment\\tsp_experiment\\resource\\res_analyz_spr_10"
+  if (str_detect(Sys.info()['sysname'], "Darwin")) {
+    path_data <- "resource/res_analyz_spr_10/"
+  } else {
+    path_data <- "E:\\baiduyun\\github\\tsp_experiment\\tsp_experiment\\resource\\res_analyz_spr_10"
+  }
   best_value <- as.numeric(readLines(file.path(path_data,"ColorOptimalLength.txt"), 30))
   best_value
 }
 
 # 32 subjects
 get_subject_dir_map <- function() {
-  path_data <- "E:\\baiduyun\\github\\tsp_experiment\\tsp_experiment\\resource\\res_analyz_spr_10\\TSP_spr_19/colored"
+  if (str_detect(Sys.info()['sysname'], "Darwin")) {
+    path_data <- "resource/res_analyz_spr_10/TSP_spr_19/colored"
+  } else {
+    path_data <- "E:\\baiduyun\\github\\tsp_experiment\\tsp_experiment\\resource\\res_analyz_spr_10\\TSP_spr_19/colored"
+  }
+
   dirsAll <- list.dirs(path =file.path(path_data) , full.names = TRUE, recursive = TRUE) 
   dirsAll <- grep("results", dirsAll, value = TRUE)
   subj_count <- length(dirsAll) #
@@ -42,7 +54,12 @@ get_distance_from_two_record <- function(point1, point2) {
 }
 
 get_file_content <- function(map_id, subject_id, subject_dir_map) {
-  file <- paste(subject_dir_map[subject_id],"\\TSPMap_RandomPoints_Color_SwitchCost_", toString(map_id-1),"-CollectedTour.tspx",sep = "")
+  if (str_detect(Sys.info()['sysname'], "Darwin")) {
+    file <- paste(subject_dir_map[subject_id],"/TSPMap_RandomPoints_Color_SwitchCost_", toString(map_id-1),"-CollectedTour.tspx",sep = "")
+  } else {
+    file <- paste(subject_dir_map[subject_id],"\\TSPMap_RandomPoints_Color_SwitchCost_", toString(map_id-1),"-CollectedTour.tspx",sep = "")
+  }
+
   file_content = readChar(file, file.info(file)$size)
   file_content
 }
@@ -96,8 +113,8 @@ for(subject_id in 1:30) {
 }
 
 # That is what we need for next step!!
-experiment_table
-range(experiment_table$block_1_to_5)
+#experiment_table
+
 
 # write.csv(experiment_table, file='resource/experiment_table.csv', row.names = FALSE)
 ```
@@ -124,25 +141,21 @@ qqnorm(fit.lm$residuals)
 ```{r}
 ## boxplot
 par(mar=c(4,4,2,4),mfrow=c(1,6))
-boxplot(experiment_table[experiment_table$block_1_to_5==1,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block1")
-lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==1,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==1,]$err_ratio)),col='red',lwd=2)
-boxplot(experiment_table[experiment_table$block_1_to_5==2,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block2")
-lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==2,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==2,]$err_ratio)),col='red',lwd=2)
-boxplot(experiment_table[experiment_table$block_1_to_5==3,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block3")
-lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==3,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==3,]$err_ratio)),col='red',lwd=2)
-boxplot(experiment_table[experiment_table$block_1_to_5==4,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block4")
-lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==4,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==4,]$err_ratio)),col='red',lwd=2)
-boxplot(experiment_table[experiment_table$block_1_to_5==5,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block5")
-lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==5,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==5,]$err_ratio)),col='red',lwd=2)
-boxplot(experiment_table[experiment_table$block_1_to_5==6,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block6")
-lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==6,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==6,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_6==1,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block1")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_6==1,]$err_ratio),median(experiment_table[experiment_table$block_1_to_6==1,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_6==2,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block2")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_6==2,]$err_ratio),median(experiment_table[experiment_table$block_1_to_6==2,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_6==3,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block3")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_6==3,]$err_ratio),median(experiment_table[experiment_table$block_1_to_6==3,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_6==4,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block4")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_6==4,]$err_ratio),median(experiment_table[experiment_table$block_1_to_6==4,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_6==5,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block5")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_6==5,]$err_ratio),median(experiment_table[experiment_table$block_1_to_6==5,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_6==6,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block6")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_6==6,]$err_ratio),median(experiment_table[experiment_table$block_1_to_6==6,]$err_ratio)),col='red',lwd=2)
 
 
 
-library('FNN')
-library('tidyverse')
-library('ggfortify')
-library('ggplot2')
 res <- as.data.frame(cbind(experiment_table$map_id,experiment_table$subject_id,experiment_table$err_ratio))
 names(res) <- c("map_id","subject_id","err_ratio")
 ggplot(res,aes(x=map_id, y = log(err_ratio),colour=subject_id)) + geom_point()
@@ -171,609 +184,8 @@ get_lable <- function(k,training_data,test_point){
 }
 
 get_lable(10,train_data$err_ratio,0.25245273)[1]
-lapply(test_data$err_ratio)
+# lapply(test_data$err_ratio)
 #plot kmeans
-library(ggfortify)
-library(ggplot2)
 autoplot(kmeans(res[,c(1,3)], 30),data=res,label=TRUE, label.size=3, frame=FALSE)
 ```
 
-```{r, 3_plots_for_analysis}
-library(ggplot2)
-tab <- as.table(fit.lm$coefficients)[2:31] 
-
-
-ggplot( 
-  data = mean_of_5,mapping = aes( x= 1:6 ,y = mean_of_5[,2])) + 
-   geom_path(size=1) + geom_errorbar(aes(ymin=(mean_of_5[,2]-std[,2]), ymax=(mean_of_5[,2]+std[,2])), width=.2,
-                 position=position_dodge(0.05)) +coord_cartesian(xlim=c(1, 6),ylim=c(.15, .25)) +ylab("Error") +xlab("Blocks") 
-
-blc <- c("bl1","bl2","bl3","bl4","bl5","bl6")
-
-fit <- aov(mean_of_5[,2] ~ blc, data=mean_of_5)
-
-
-#sign test
-binom.test(18, 32, p = 0.5, alternative = "two.sided", conf.level = 0.95)
-
-
-
-```
-
-```{r}
-
-#plotting first 5-6 trials only
-library(ggplot2)
-library(tidyr)
-
-
-#df2 <- data_summary(res_err_time_ordered[,4])
-
-
-
-#Analyzing data
-#mean_col <- ncol(res_err_time_ordered)
-
-mean_of_5 <- data.frame(1:6,0)
-std <- data.frame(1:6,0)
-
-mean_of_5 [1:6] <- mean(res_err_time_ordered[1:(nn*5),])
-std[1:6] <- sd (res_err_time_ordered[1:(nn*5),])/sqrt(length(res_err_time_ordered[1:(nn*5),]))
-
-
-
-mean_of_5 <- data.frame(1:6,mean_of_5)
-res_err_time_ordered[1:(nn*5),]
-
-ggplot( 
-  data = mean_of_5,mapping = aes( x= 1:6 ,y = mean_of_5[,2])) + 
-   geom_path(size=1) + geom_errorbar(aes(ymin=(mean_of_5[,2]-std[,2]), ymax=(mean_of_5[,2]+std[,2])), width=.2,
-                 position=position_dodge(0.05)) +coord_cartesian(xlim=c(1, 6),ylim=c(.1, .3)) +ylab("Error") +xlab("Blocks") 
-
-blc <- c("bl1","bl2","bl3","bl4","bl5","bl6")
-
-fit <- aov(mean_of_5[,2] ~ blc, data=mean_of_5)
-
-
-```
-
-```{r}
-
-mat <- matrix(c(2, 4, 3, 1, 5, 7), nrow=3, ncol=2)
-colnames(mat) <- c("col1","col2")
-rownames(mat) <- c("row1","row2","row3")
-library(reshape)
-library(ggvis)
-melt(mat)
-
-
-res_df <- data.frame("bl" = rep(1:6,times=32), "subj" = c( rep(1:6,times=32)) )
-?rep
-(res_err_time_ordered)
-res_df_gather <- gather(res_df, )
-col(res_err_time_ordered)
-
-
-plt<- ggvis(res_err_time_ordered,x=~row(res_err_time_ordered),y=1) %>%  layer_lines()
-
-plt
-
-
-
-?as.data.frame
-
-
-
-gather(as.data.frame(res_err_time_ordered), key = "subj", value = "err", 1:32)
-
-```
-
-```{r}
-
-library(ggvis)
-library(dplyr)
-
-mean_of_5_per_subj <- data.frame(1:6,0)
-std_per_subj <- data.frame(1:6,0)
-for (mm in 1:32){
-  for (nn in 1:6){
-  mean_of_5_per_subj [nn,mm] <- mean(res_err_time_ordered[((nn*5)-5+1):(nn*5),mm])
-  std_per_subj[nn,mm] <- sd (res_err_time_ordered[((nn*5)-5+1):(nn*5),mm])/sqrt(length(res_err_time_ordered[((nn*5)-5+1):(nn*5),mm]))
-  }
-}
-colnames(mean_of_5_per_subj) <- c(1:32)
-
-res_gather <- gather(as.data.frame(mean_of_5_per_subj), key = "subj", value = "err", 1:32)
-
-res_gather$bl <- rep(c(1:6),32)
-
-
-plt<- res_gather%>% ggvis(~subj,~err,stroke = ~bl,fill=~bl) %>% group_by(bl) %>% 
-        layer_points() %>% scale_numeric("stroke", range = c("yellow", "red"))%>% scale_numeric("fill", range = c("yellow", "red"))
-
-plt
-
-res_gather[1,2]
-
-
-plt<- res_gather[61:120,]%>% ggvis(~bl,~err,stroke = ~subj) %>% group_by(subj) %>% 
-        layer_lines(strokeWidth := 2)  %>% add_axis("x", ticks = 6)
-
-plt
-
-res_gather$ID <- c(1:(32*6))
-
-plt<- res_gather%>% ggvis(~ID,~err,stroke = ~subj) %>% group_by(subj) %>% 
-        layer_lines(strokeWidth := 2)  %>% add_axis("x", ticks = (32*6))
-
-plt
-```
-
-```{r}
-
-file_time_number_all_subj
-
-res_err_time_ordered
-
-mean_map <- matrix (0,30,30)
-
-
-
-res_err_time_ordered_transpose <- matrix (0, 32,30) 
-res_err_time_ordered_transpose <- t(res_err_time_ordered)
-file_time_number_all_subj_no_zero <- file_time_number_all_subj + 1
-for (row_map in 1:30){
-  for (col_trial in 1:30){
-    mean_map[row_map,col_trial] <- mean(res_err_time_ordered_transpose[which(file_time_number_all_subj_no_zero[,col_trial]== row_map),col_trial])
-    
-  }
-}
-
-
-
-mean_map_5_per_map <- matrix(0,30,6)
-for (mm in 1:30){
-  for (nn in 1:6){
-  mean_map_5_per_map [mm,nn] <- mean(mean_map[mm,((nn*5)-5+1):(nn*5)], na.rm=TRUE)
-  }
-}
-
-
-mean_map_5_per_map_df  <- gather(as.data.frame(t(mean_map_5_per_map)), key = "map", value = "err", 1:30)
-mean_map_5_per_map_df$bl <- rep(1:6,30)
-mean_map_5_per_map_df$ID <- 1:180
-
-plt<- mean_map_5_per_map_df%>% ggvis(~map,~err,stroke = ~bl,fill=~bl) %>% group_by(bl) %>% 
-        layer_points() %>% scale_numeric("stroke", range = c("yellow", "red"))%>% scale_numeric("fill", range = c("yellow", "red"))
-
-plt
-
-res_gather[1,2]
-
-
-plt<- res_gather[61:120,]%>% ggvis(~bl,~err,stroke = ~subj) %>% group_by(subj) %>% 
-        layer_lines(strokeWidth := 2)  %>% add_axis("x", ticks = 6)
-
-plt
-
-
-res_gather$ID <- c(1:(32*6))
-
-plt<- mean_map_5_per_map_df%>% ggvis(~ID,~err,stroke = ~map) %>% group_by(map) %>% 
-        layer_lines(strokeWidth := 2)  %>% add_axis("x", ticks = (32*6))
-
-plt
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-#finding what the random number was for each tour from the availabe points
-
-
-
-
-#First finding the original order of maps
-subj_num = 0
-
-
-#filenames <- list.files("C:/Users/zsajedin/Desktop/results", pattern="*.tspx", full.names=TRUE)
-#tsp_result_colored_feb_25_2019
-dirsAll <- list.dirs(path ="C:/Users/zsajedin/Desktop/test" ,full.names = TRUE, recursive = TRUE) #all subfolders
-
-dirsAll <- grep("results", dirsAll, value = TRUE) #all subfolders
-dirsAll
-
-res_tbl_Original <- matrix(0, nrow = 30, ncol = 50) # saving  the orderd map
-
-
-
-#reading each map file
-for(folder in dirsAll[1:length(dirsAll)]){
-    subj_num = subj_num + 1
-    counter =0
-    #filenames <- list.files(paste(folder+, pattern="*.tspx", full.names=TRUE)
-    while (counter< 30 ){
-        file <- paste(folder,"/TSPMap_RandomPoints_Color_SwitchCost_",toString(counter),".MapXml",sep = "")
-        file
-        counter=counter+1
-        fMap <- readLines(file,58)
-        #---------------
-        tourL = 0
-        #-----
-        #extracting points and color from each tour file
-        matches <- regmatches(fMap, gregexpr("[[:digit:]]+", fMap))
-        fN <- as.numeric(unlist(matches))
-        fNum<-fN[5:length(fN)]#5 because we do not need the first 5 numbers in xmlmap file
-        coord <- matrix(fNum,byrow = TRUE ,50,3)
-
-
-        #comparing them with 30maps
-        coord_ordered = coord[order(coord[,1])]
-        
-         res_tbl_Original[counter,1:50] <- coord_ordered[1:50]
-       
-
-  #saving the matched map
-
-
-}
-}
-
-
-#-------------------------------------------
-#Second finding the random order of maps for each subject
-
-
-
-#First finding the original order of maps
-subj_num = 0
-
-
-#filenames <- list.files("C:/Users/zsajedin/Desktop/results", pattern="*.tspx", full.names=TRUE)
-#tsp_result_colored_feb_25_2019
-dirsAll <- list.dirs(path ="C:/Users/zsajedin/Desktop/test" ,full.names = TRUE, recursive = TRUE) #all subfolders
-subj_count <- length(dirsAll)-1 #-1 bcz root is
-
-dirsAll <- grep(pattern = "results", dirsAll, value = TRUE) #all subfolders
-dirsAll
-
-res_tbl <- matrix(0, nrow = 30, ncol = 50) # saving  the orderd map
-
-
-
-#reading each map file
-for(folder in dirsAll[1:length(dirsAll)]){
-    subj_num = subj_num + 1
-    counter =0
-    #filenames <- list.files(paste(folder+, pattern="*.tspx", full.names=TRUE)
-    while (counter< 30 ){
-        file <- paste(folder,"/TSPMap_RandomPoints_Color_SwitchCost_",toString(counter),".mapxml",sep = "")
-        file
-        counter=counter+1
-        fMap <- readLines(file,58)
-        #---------------
-        tourL = 0
-        #-----
-        #extracting points and color from each tour file
-        matches <- regmatches(fMap, gregexpr("[[:digit:]]+", fMap))
-        fN <- as.numeric(unlist(matches))
-        fNum<-fN[6:length(fN)]
-        coord <- matrix(fNum,byrow = TRUE ,50,3)
-
-
-        #comparing them with 30maps
-        coord_ordered <- coord[order(coord[1:50,3])]
-        
-       res_tbl[counter,1:50] <- coord_ordered[1:50]
-       map_order <- 30:59
-       
-       for (mm in 1:30){
-         map_order[mm] <- which(apply(res_tbl_Original, 1, function(x) all(x == res_tbl[mm,1:50])))
-
-         #map_order[mm] <- which(res_tbl_Original==res_tbl_Original[mm,1:50])
-         #map_order[mm] <- which(apply(res_tbl_Original[1:30,1:50], 1, function(x) all.equal(x[1:50], res_tbl[mm,1:50])) == "TRUE")
-       }
-       write(map_order, file = paste(folder,"/rnd.txt"),sep = "")
-       
-       
-  #saving the matched map
-
-
-}
-}
-
-```
-
-```{r}
-subj_num = 0
-
-
-#filenames <- list.files("C:/Users/zsajedin/Desktop/results", pattern="*.tspx", full.names=TRUE)
-#tsp_result_colored_feb_25_2019
-dirsAll <- list.dirs(path ="C:/Users/zsajedin/Desktop/test0" ,full.names = TRUE, recursive = TRUE) #all subfolders
-
-dirsAll <- grep("results", dirsAll, value = TRUE) #all subfolders
-dirsAll
-
-res_tbl <- matrix(0, nrow = 30, ncol = 50) # saving  the orderd map
-
-
-
-#reading each map file
-
-
-
-
-for(folder in dirsAll[1:length(dirsAll)]){
-    subj_num = subj_num + 1
-    counter =0
-    #filenames <- list.files(paste(folder+, pattern="*.tspx", full.names=TRUE)
-    #-------------------
-    #ordering files by their creation time
-    details = file.info(list.files(folder, pattern="*.tspx", full.names=TRUE))
-    details = details[with(details, order(as.POSIXct(mtime))), ]
-    files_time_ordered = rownames(details)
-    
-    
-    #--------------------
-    
-    
-    
-    
-    
-    while (counter< 30 ){
-        file <- paste(folder,"/TSPMap_RandomPoints_Color_SwitchCost_",toString(counter),"-CollectedTour.tspx",sep = "")
-        
-        counter=counter+1
-        fMap <- readLines(file,58)
-        #---------------
-        tourL = 0
-        #-----
-        #extracting points and color from each tour file
-        matches <- regmatches(fMap, gregexpr("[[:digit:]]+", fMap))
-        fN <- as.numeric(unlist(matches))
-        fNum<-fN[6:length(fN)]
-        coord <- matrix(fNum,byrow = TRUE ,50,3)
-
-
-        #comparing them with 30maps
-        coord_ordered = coord[order(coord[,1])]
-        
-         res_tbl[counter,1:50] <- coord_ordered[1:50]
-
-
-  #saving the matched map
-
-
-    }
-        map_order <- 30:59
-       
-        for (mm in 1:30){
-         map_order[mm] <- which(apply(res_tbl_Original, 1, function(x) all(x == res_tbl[mm,1:50])))
-
-         #map_order[mm] <- which(res_tbl_Original==res_tbl_Original[mm,1:50])
-         #map_order[mm] <- which(apply(res_tbl_Original[1:30,1:50], 1, function(x) all.equal(x[1:50], res_tbl[mm,1:50])) == "TRUE")
-        }
-        write(map_order, file = paste(folder,"/rnd.txt",sep = ""))
-        ?file     
-        
-        mode(map_order)
-    
-}
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-#practing exam
-years <- 1991 : 2000  # Watch out for: years <- 2000:1991
-years
-years[] <- 0  # Maintains old vector
-years
-people <- c("Alice", "Bob", 'Carol') # single/double quotes
-
-class(mean(3))
-typeof(mean(3))
-mode(mean(3))
-
-years[length(years) + 1] <- 2015
-x
-
-vals <- 1 : 3
-typeof(vals)
-
-vals[6] <- 6L
-
-print(vals)
-length(vals)
-?seq
-
-((-2:2) >= 0) && ((-2:10) <= 0)
-
-
-
-
-house <- "Apartment"; 
-cat   <- list("Calico", "Flopsy", 3L); 
-sofa  <- "Red" 
-possessions <- list( house, cat, sofa, "3000USD")
-
-typeof(possessions[[1]])
-
-class(unlist(possessions))
-str(possessions)
-
-?setNames
-
-
-
-
-
-car <- list("Manufacturer" = "Ford", "Make" = "Mustang", 
-             "Year" = 1999, "Gasoline" = TRUE )
-
-car[c("Manufacturer", "Make")]  # A two-element sublist
-car[["Year"]]   # A length-one vector
-car$Year   # Shorthand notation
-
-attributes(car)
-
-
-
-
-
-
-my_arr <- array(1 : 8, c(2,2,2)); print(my_arr)
-
-
-my_mat <- array(1 : 6, c(2,3,1)) # dim(my_mat) is (2,3,1) 
-print(my_mat)
-
-my_mat <- drop(my_mat) # dim is now (2,3) 
-print(my_mat)
-
-
-
-df <- data.frame(age = c(25L,24L,21L),  # Warning: df is an
-                 PhD = c( T , T , F ),  #   R function
-                 GPA = c(3.6,2.4,2.8))
-
-print(df)
-typeof(df)
-class(df)
-
-
-library(tidyverse)
-t_mtcars <- as_tibble(mtcars)
-class(t_mtcars)
-
-sin_tb <- tibble(x=seq(-5,5,.1), y=sin(x));
-print(sin_tb)
-
-
-grades <- factor(c("a", "a", "b", "f"))
-typeof(grades)
-levels(grades)
-class(grades)
-
-grades <- factor(c("a","a","b","f"),
-            levels = c("f","c","b","a"),
-            ordered = TRUE )
-grades
-
-
-# First control, then treatment:
-gl(2, 8, labels = c("Control", "Treat"))
-
-gl(2, 1, 20) # 20 alternating 1s and 2s
-?gl
-
-c(TRUE, TRUE) & c(TRUE, FALSE) & {print("Hello!"); FALSE}
-
-
-
-gauss_pdf <- function(ip, mn, vr, lg_pr) {
-# Calculate the (log)-probability of Gaussian with mean m and variance vr
-  rslt <- -((ip-mn)^2)/(2*vr)
-  rslt <- rslt - 0.5*log(2*pi*vr)
-# Do we want the prob or the log-prob?
-  if(lg_pr == F) rslt <- exp(rslt)
-  return(rslt)  
-}
-str(gauss_pdf)
-
-x <- 5; env <- environment(); env
-env$x 
-
-
-
-
-
-
-
-
-
-func1 <- function() {my_local <- 1; environment()}
-local_env <- func1()
-local_env$my_local
-parent.env(local_env) # Each environment has a parent environment
-
-
-
-
-x <- 5 
-func1 <- function(x) {x + 1}
-func1(1)
-x <- 5; func2 <- function() {x + 1}
-func2(); x
-x <- 10; func2() # use new x or x at the time of definition?
-x <- 1; y <- 10
-func3 <- function() {x <- x + 1; y <<- y + 1; environment()}
-env <- func3()
-c(x, y, env$x, env$y)
-func1 <- function(x) {x + 1}
-func4 <- function(x) {func1(x)}
-func4(2)
-x <- 5; func2 <- function() {x + 1}
-func5 <- function(x) {x <- 10; func2()}
-func5(2) # func2 uses x from calling or global environment?
-
-func <- function(x,y) if(x) 2*x else x + 2*y
-func(1, {print("Hello"); 5})
-func(0, {print("Hello"); 5})
-
-
-
-mix2norm <- data.frame(dosage = c(rnorm(1000),rnorm(1000,3)),
-                     grp = rep(c("a","b"),each=1000))
-
-ggplot(mix2norm, aes(x=dosage, color = grp)) +
-    geom_density(adjust=1)
-
-
-ggplot(mix2norm, aes(x=dosage, color = grp)) + stat_density(adjust=.01)
-
-ggplot(mix2norm, aes(x=dosage, color = grp)) +
-  stat_density(adjust=1/2, size=2, position = "jitter",
-  geom = "line")
-
-
-
-edu_pred <- 10:25
-sen_pred <- seq(0,200,10)
-pred <- data.frame(Education=rep(edu_pred, length(sen_pred)),
-               Seniority=rep(sen_pred, each=length(edu_pred) ))
-p_val <- predict.lm(fit, pred)
-pred$p_val = p_val
-
-
-?gather
-
-```
-
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
