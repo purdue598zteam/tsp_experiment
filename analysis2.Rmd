@@ -6,14 +6,15 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, 1_clean_all_data}
 library(FNN)
 library(XML)
 library(tidyverse)
 library(ggfortify)
 library(ggplot2)
-```
 
-```{r, 1_clean_all_data}
 rm(list = ls())
 
 get_subject_order_map <- function() {
@@ -111,14 +112,80 @@ for(subject_id in 1:30) {
     experiment_table <- rbind(experiment_table, record)
   }
 }
-
+experiment_table
 # That is what we need for next step!!
 #experiment_table
-
 
 # write.csv(experiment_table, file='resource/experiment_table.csv', row.names = FALSE)
 ```
 
+```{r plot_the_trace}
+get_experiment_coord <- function(map_id, subject_id, subject_dir_map) {
+  file_content = get_file_content(map_id, subject_id, subject_dir_map)
+  if (0 == length(file_content)) {
+    warning("There are empty file, should check!")
+  }
+  coord <- data.frame()
+  count <- 0
+  for(city in xmlChildren(xmlChildren(xmlChildren(xmlRoot(xmlParse(file_content)))$Tours)$Tour)) {
+    count <- count + 1
+    data<-c(map_id, subject_id, count,as.numeric(xmlAttrs(city)['x']), as.numeric(xmlAttrs(city)['y']), as.numeric(xmlAttrs(city)['group']))
+    coord <- rbind(coord, data)
+  }
+  colnames(coord) <- c("map_id","subject_id","index","x", "y", "group")
+  coord
+}
+
+
+coord_1_1 <- get_experiment_coord(map_id=1, subject_id=1, subject_dir_map)
+coord_1_2 <- get_experiment_coord(map_id=1, subject_id=2, subject_dir_map)
+coord_1_3 <- get_experiment_coord(map_id=1, subject_id=3, subject_dir_map)
+coord_2_1 <- get_experiment_coord(map_id=2, subject_id=1, subject_dir_map)
+coord_2_2 <- get_experiment_coord(map_id=2, subject_id=2, subject_dir_map)
+coord_2_3 <- get_experiment_coord(map_id=2, subject_id=3, subject_dir_map)
+coord_3_1 <- get_experiment_coord(map_id=3, subject_id=1, subject_dir_map)
+coord_3_2 <- get_experiment_coord(map_id=3, subject_id=2, subject_dir_map)
+coord_3_3 <- get_experiment_coord(map_id=3, subject_id=3, subject_dir_map)
+
+coord<-rbind(coord_1_1,coord_1_2,coord_1_3,coord_2_1,coord_2_2,coord_2_3,coord_3_1,coord_3_2,coord_3_3)
+coord$group <- as.factor(coord$group)
+coord$map_id <- as.character(coord$map_id)
+coord$subject_id <- as.character(coord$subject_id)
+```
+
+```{r }
+
+hp <- ggplot(coord, aes(x, y)) +
+  geom_point(aes(color = group), size = 2) + geom_path()
+
+map_labels <- c("1"="Map 1#", "2"="Map 2#", "3"="Map 3#")
+subject_labels <- c("1"="Subject 1#", "2"="Subject 2#", "3"="Subject 3#")
+
+# Histogram of total_bill, divided by sex and smoker
+hp + facet_grid(subject_id ~ map_id, labeller=labeller(map_id = map_labels, subject_id = subject_labels))
+
+library(knitr)
+sub_table <- experiment_table[experiment_table$map_id %in% 1:3 & experiment_table$subject_id %in% 1:3,]
+xtable_sub <- xtabs( real_score ~ subject_id +map_id , sub_table, drop.unused.levels=TRUE)
+colnames(xtable_sub)<-c("Map #1","Map #2","Map #3")
+rownames(xtable_sub)<-c("Subject #1","Subject #2","Subject #3")
+
+kable(xtable_sub, caption = "Scores for Subject 1:3 on Map 1:3")
+
+xtable_best<-data.frame(map_score[1],map_score[2],map_score[3])
+colnames(xtable_best)<-c("Map #1","Map #2","Map #3")
+rownames(xtable_best)<-c("Best Score in Theory")
+
+kable(xtable_best, caption = "Best Scores for Map 1:3")
+
+error_ratio <- xtable_sub
+xtable_best1<-rbind(xtable_best,xtable_best,xtable_best)
+error_ratio2<-(error_ratio-xtable_best1)/xtable_best1
+rownames(error_ratio2)<-c("Subject #1","Subject #2","Subject #3")
+
+kable(error_ratio2, caption = "Error Ratios for Subject 1 to 3 on Map 1 to 3")
+
+```
 
 ```{r, 2_model_regression}
 experiment_table_lm <- experiment_table
