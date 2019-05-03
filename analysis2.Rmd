@@ -9,6 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, 1_clean_all_data}
+rm(list = ls())
 library(XML)
 library(tidyverse)
 
@@ -18,14 +19,14 @@ get_subject_order_map <- function() {
 }
 
 get_map_score <- function() {
-  path_data <- "resource/res_analyz_spr_10/"
+  path_data <- "E:\\baiduyun\\github\\tsp_experiment\\tsp_experiment\\resource\\res_analyz_spr_10"
   best_value <- as.numeric(readLines(file.path(path_data,"ColorOptimalLength.txt"), 30))
   best_value
 }
 
 # 32 subjects
 get_subject_dir_map <- function() {
-  path_data <- "resource/res_analyz_spr_10/TSP_spr_19/colored"
+  path_data <- "E:\\baiduyun\\github\\tsp_experiment\\tsp_experiment\\resource\\res_analyz_spr_10\\TSP_spr_19/colored"
   dirsAll <- list.dirs(path =file.path(path_data) , full.names = TRUE, recursive = TRUE) 
   dirsAll <- grep("results", dirsAll, value = TRUE)
   subj_count <- length(dirsAll) #
@@ -41,7 +42,7 @@ get_distance_from_two_record <- function(point1, point2) {
 }
 
 get_file_content <- function(map_id, subject_id, subject_dir_map) {
-  file <- paste(subject_dir_map[subject_id],"/TSPMap_RandomPoints_Color_SwitchCost_", toString(map_id-1),"-CollectedTour.tspx",sep = "")
+  file <- paste(subject_dir_map[subject_id],"\\TSPMap_RandomPoints_Color_SwitchCost_", toString(map_id-1),"-CollectedTour.tspx",sep = "")
   file_content = readChar(file, file.info(file)$size)
   file_content
 }
@@ -88,47 +89,98 @@ for(subject_id in 1:30) {
     best_score <- map_score[map_id]
     err_ratio <- (real_score-best_score)/best_score
     order_1_to_30 <- subject_order_map[subject_id, map_id]
-    block_1_to_5 <- floor((order_1_to_30 - 1) / 6) + 1
-    record <- data.frame(map_id, subject_id, real_score, best_score, err_ratio, order_1_to_30, block_1_to_5)
+    block_1_to_6 <- floor((order_1_to_30 - 1) / 5) + 1
+    record <- data.frame(map_id, subject_id, real_score, best_score, err_ratio, order_1_to_30, block_1_to_6)
     experiment_table <- rbind(experiment_table, record)
   }
 }
 
 # That is what we need for next step!!
 experiment_table
+range(experiment_table$block_1_to_5)
 
 # write.csv(experiment_table, file='resource/experiment_table.csv', row.names = FALSE)
 ```
 
 
 ```{r, 2_model_regression}
+experiment_table_lm <- experiment_table
 experiment_table$map_id <- as.factor(experiment_table$map_id)
-experiment_table$block_1_to_5 <- as.factor(experiment_table$block_1_to_5)
+experiment_table$block_1_to_6 <- as.factor(experiment_table$block_1_to_6)
 experiment_table$subject_id <- as.factor(experiment_table$subject_id)
 
-anomod <- aov(err_ratio ~ subject_id + map_id + block_1_to_5, data=experiment_table)
+anomod <- aov(log(err_ratio) ~ subject_id + map_id + block_1_to_6, data=experiment_table)
 summary(anomod)
 
-fit.lm <- lm(err_ratio ~ subject_id + map_id + block_1_to_5, data=experiment_table)
+fit.lm <- lm(log(err_ratio) ~ subject_id + map_id + block_1_to_6, data=experiment_table)
 summary(fit.lm)
+qqnorm(fit.lm$residuals)
+
+#prediction
+
 ```
 
+## Classification prediction
+```{r}
+## boxplot
+par(mar=c(4,4,2,4),mfrow=c(1,6))
+boxplot(experiment_table[experiment_table$block_1_to_5==1,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block1")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==1,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==1,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_5==2,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block2")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==2,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==2,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_5==3,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block3")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==3,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==3,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_5==4,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block4")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==4,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==4,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_5==5,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block5")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==5,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==5,]$err_ratio)),col='red',lwd=2)
+boxplot(experiment_table[experiment_table$block_1_to_5==6,]$err_ratio,col="seagreen",ylim=c(0,0.8),xlab="block6")
+lines(x=c(0.8,1.2),y=c(median(experiment_table[experiment_table$block_1_to_5==6,]$err_ratio),median(experiment_table[experiment_table$block_1_to_5==6,]$err_ratio)),col='red',lwd=2)
+
+
+
+library('FNN')
+library('tidyverse')
+library('ggfortify')
+library('ggplot2')
+res <- as.data.frame(cbind(experiment_table$map_id,experiment_table$subject_id,experiment_table$err_ratio))
+names(res) <- c("map_id","subject_id","err_ratio")
+ggplot(res,aes(x=map_id, y = log(err_ratio),colour=subject_id)) + geom_point()
+ggplot(res,aes(x=subject_id, y = log(err_ratio),colour=map_id)) + geom_point()
+
+#train
+
+train_data <- res[which(res$subject_id<22),]
+test_data <- res[which(res$subject_id >21),]
+train_data$index <- c(1:630)
+
+get_distance <- function(x,y){
+  distance <- abs(x-y)
+  distance
+}
+get_knn <- function(k,training_data,test_point){
+  my_dist <- lapply(training_data, get_distance, test_point)
+  my_dist_sort <- sort(unlist(my_dist),index.return = TRUE)
+  my_dist_sort$ix[1:k]
+}
+
+
+get_lable <- function(k,training_data,test_point){
+  index <- get_knn(k,training_data,test_point)
+  train_data[index,]$map_id
+}
+
+get_lable(10,train_data$err_ratio,0.25245273)[1]
+lapply(test_data$err_ratio)
+#plot kmeans
+library(ggfortify)
+library(ggplot2)
+autoplot(kmeans(res[,c(1,3)], 30),data=res,label=TRUE, label.size=3, frame=FALSE)
+```
 
 ```{r, 3_plots_for_analysis}
 library(ggplot2)
 tab <- as.table(fit.lm$coefficients)[2:31] 
-
-hist(tab)
-AirPassengers
-as.vector()
-
-mean_of_5 <- data.frame(1:6,0)
-std <- data.frame(1:6,0)
-for (nn in 1:6){
-mean_of_5 [nn] <- mean(res_err_time_ordered[((nn*5)-5+1):(nn*5),])
-std[nn] <- sd (res_err_time_ordered[((nn*5)-5+1):(nn*5),])/sqrt(length(res_err_time_ordered[((nn*5)-5+1):(nn*5),]))
-}
-
 
 
 ggplot( 
